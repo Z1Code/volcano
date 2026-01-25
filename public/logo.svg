@@ -1,0 +1,33 @@
+<svg width="195" height="38" viewBox="0 0 195 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.5" filter="url(#filter0_f_volcano)">
+<path d="M16.1743 30.0179H23.7135" stroke="#FF1083" stroke-width="3.49058" stroke-miterlimit="16" stroke-linecap="round"/>
+<path d="M19.9438 30.0178V18.709" stroke="#FF1083" stroke-width="3.49058" stroke-miterlimit="16" stroke-linecap="round"/>
+<path d="M19.9438 18.709L10.0394 7.98206H29.8469L19.9438 18.709Z" stroke="#FF1083" stroke-width="3.49058" stroke-miterlimit="16" stroke-linecap="round"/>
+</g>
+<path d="M16.1743 30.1725H23.7135" stroke="#FF1083" stroke-width="2.92193" stroke-linecap="square" stroke-linejoin="round"/>
+<path d="M19.9438 30.0178V18.709" stroke="#FF1083" stroke-width="2.92193" stroke-linecap="square" stroke-linejoin="round"/>
+<path d="M29.8469 7.98206L30.9204 8.97307L33.1841 6.52109H29.8469V7.98206ZM10.0394 7.98206V6.52109H6.70201L8.96603 8.97314L10.0394 7.98206ZM19.9438 18.709L18.8704 19.7001C19.147 19.9996 19.5361 20.17 19.9439 20.17C20.3516 20.17 20.7407 19.9996 21.0173 19.7L19.9438 18.709ZM8.96603 8.97314L18.8704 19.7001L21.0172 17.7179L11.1128 6.99097L8.96603 8.97314ZM29.8469 6.52109H10.0394V9.44302H29.8469V6.52109ZM28.7735 6.99104L18.8703 17.718L21.0173 19.7L30.9204 8.97307L28.7735 6.99104Z" fill="#FF1083"/>
+<g fill="white">
+<!-- V -->
+<path d="M44 8.5H49.2L53.5 23L57.8 8.5H63L56.5 30H50.5L44 8.5Z"/>
+<!-- O -->
+<path d="M64.5 19.25C64.5 12.5 68.5 8 74.5 8C80.5 8 84.5 12.5 84.5 19.25C84.5 26 80.5 30.5 74.5 30.5C68.5 30.5 64.5 26 64.5 19.25ZM79 19.25C79 14.5 77.5 12.5 74.5 12.5C71.5 12.5 70 14.5 70 19.25C70 24 71.5 26 74.5 26C77.5 26 79 24 79 19.25Z"/>
+<!-- L -->
+<path d="M87 8.5H92.5V25.5H102V30H87V8.5Z"/>
+<!-- C -->
+<path d="M103.5 19.25C103.5 12.5 107.5 8 114 8C117.5 8 120 9 122 10.5L120 14.5C118.5 13.2 116.5 12.5 114.2 12.5C110.8 12.5 109 14.8 109 19.25C109 23.7 110.8 26 114.2 26C116.5 26 118.5 25.3 120 24L122 28C120 29.5 117.5 30.5 114 30.5C107.5 30.5 103.5 26 103.5 19.25Z"/>
+<!-- A -->
+<path d="M123.5 30L132 8.5H138L146.5 30H141L139.5 25.5H130.5L129 30H123.5ZM132 21H138L135 12L132 21Z"/>
+<!-- N -->
+<path d="M148 8.5H153.5L162 22V8.5H167V30H161.5L153 16V30H148V8.5Z"/>
+<!-- O -->
+<path d="M170 19.25C170 12.5 174 8 180 8C186 8 190 12.5 190 19.25C190 26 186 30.5 180 30.5C174 30.5 170 26 170 19.25ZM184.5 19.25C184.5 14.5 183 12.5 180 12.5C177 12.5 175.5 14.5 175.5 19.25C175.5 24 177 26 180 26C183 26 184.5 24 184.5 19.25Z"/>
+</g>
+<defs>
+<filter id="filter0_f_volcano" x="0.234862" y="0.419188" width="39.4163" height="37.1616" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2.90881" result="effect1_foregroundBlur_volcano"/>
+</filter>
+</defs>
+</svg>
