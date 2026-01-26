@@ -7,15 +7,14 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [config, setConfig] = useState<SectionsConfig>(defaultConfig)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [loggingIn, setLoggingIn] = useState(false)
+  const [loginError, setLoginError] = useState('')
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  useEffect(() => {
-    fetchConfig()
-  }, [])
-
   const fetchConfig = async () => {
+    setLoading(true)
     try {
       const res = await fetch('/api/sections')
       const data = await res.json()
@@ -27,10 +26,30 @@ export default function AdminPage() {
     }
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (password) {
-      setIsAuthenticated(true)
+    if (!password) return
+
+    setLoggingIn(true)
+    setLoginError('')
+
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+
+      if (res.ok) {
+        setIsAuthenticated(true)
+        fetchConfig()
+      } else {
+        setLoginError('Invalid password')
+      }
+    } catch {
+      setLoginError('Network error. Please try again.')
+    } finally {
+      setLoggingIn(false)
     }
   }
 
