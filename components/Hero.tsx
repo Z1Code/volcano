@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function Hero() {
   const handleScrollClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
@@ -28,13 +30,12 @@ export default function Hero() {
         </h1>
 
         <div className="hero-buttons">
-          <a
-            href="#events"
+          <Link
+            href="/events"
             className="btn btn-primary"
-            onClick={(e) => handleScrollClick(e, '#events')}
           >
             Buy Tickets
-          </a>
+          </Link>
           <a
             href="#about"
             className="btn btn-outline"

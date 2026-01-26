@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { EventWithTicketTypes } from '@/types/database'
 import TicketSelector from '@/components/tickets/TicketSelector'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
 
 export default function EventDetailPage() {
   const params = useParams()
@@ -12,10 +14,20 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<EventWithTicketTypes | null>(null)
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [checkingAuth, setCheckingAuth] = useState(true)
 
   useEffect(() => {
     fetchEvent()
+    checkAuth()
   }, [params.id])
+
+  const checkAuth = async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
+    setCheckingAuth(false)
+  }
 
   const fetchEvent = async () => {
     try {
@@ -31,6 +43,14 @@ export default function EventDetailPage() {
   }
 
   const handlePurchase = async (ticketTypeId: string, quantity: number) => {
+    // Check if user is logged in before allowing purchase
+    if (!user) {
+      // Redirect to login with return URL
+      const returnUrl = encodeURIComponent(`/events/${params.id}`)
+      router.push(`/login?redirect=${returnUrl}`)
+      return
+    }
+
     setPurchasing(true)
     try {
       const res = await fetch('/api/stripe/checkout', {
