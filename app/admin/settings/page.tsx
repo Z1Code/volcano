@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { SectionsConfig, defaultConfig, sectionLabels } from '@/lib/sections-config'
+import { SectionsConfig, SocialConfig, defaultConfig, defaultSocialConfig, sectionLabels, socialLabels } from '@/lib/sections-config'
 
 const styles = {
   page: {
@@ -29,6 +29,7 @@ const styles = {
     borderRadius: '18px',
     padding: '22px',
     boxShadow: '0 20px 50px rgba(0,0,0,0.35)',
+    marginBottom: '20px',
   } as React.CSSProperties,
   title: {
     fontSize: '1.05rem',
@@ -58,6 +59,21 @@ const styles = {
     border: '1px solid #1f1f25',
     boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
   } as React.CSSProperties,
+  socialRow: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '12px',
+    padding: '14px 16px',
+    borderRadius: '14px',
+    background: '#0f0f12',
+    border: '1px solid #1f1f25',
+    boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+  } as React.CSSProperties,
+  socialHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  } as React.CSSProperties,
   toggleInfo: {
     display: 'flex',
     flexDirection: 'column' as const,
@@ -79,6 +95,7 @@ const styles = {
     background: '#18181b',
     border: '1px solid #2a2a30',
     cursor: 'pointer',
+    flexShrink: 0,
   } as React.CSSProperties,
   toggleActive: {
     position: 'relative' as const,
@@ -88,6 +105,7 @@ const styles = {
     background: 'linear-gradient(135deg, #ff1083 0%, #9b30ff 100%)',
     border: '1px solid rgba(255,16,131,0.4)',
     cursor: 'pointer',
+    flexShrink: 0,
   } as React.CSSProperties,
   thumb: {
     position: 'absolute' as const,
@@ -112,6 +130,16 @@ const styles = {
     boxShadow: '0 10px 24px rgba(255,16,131,0.35)',
     transform: 'translateX(26px)',
     transition: 'transform 0.2s ease',
+  } as React.CSSProperties,
+  input: {
+    padding: '10px 14px',
+    borderRadius: '10px',
+    border: '1px solid #2a2a30',
+    background: '#18181b',
+    color: '#fff',
+    fontSize: '0.9rem',
+    width: '100%',
+    outline: 'none',
   } as React.CSSProperties,
   button: {
     padding: '14px 28px',
@@ -153,9 +181,13 @@ const styles = {
 
 export default function AdminSettingsPage() {
   const [config, setConfig] = useState<SectionsConfig>(defaultConfig)
+  const [socialConfig, setSocialConfig] = useState<SocialConfig>(defaultSocialConfig)
   const [configLoading, setConfigLoading] = useState(true)
+  const [socialLoading, setSocialLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingSocial, setSavingSocial] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [socialMessage, setSocialMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const fetchConfig = async (signal?: AbortSignal) => {
     setConfigLoading(true)
@@ -163,17 +195,32 @@ export default function AdminSettingsPage() {
       const res = await fetch('/api/sections', { signal })
       const data = await res.json()
       setConfig(data)
-    } catch (error: any) {
-      if (error?.name === 'AbortError') return
+    } catch (error: unknown) {
+      if ((error as Error)?.name === 'AbortError') return
       setMessage({ type: 'error', text: 'No se pudo cargar la configuración' })
     } finally {
       setConfigLoading(false)
     }
   }
 
+  const fetchSocialConfig = async (signal?: AbortSignal) => {
+    setSocialLoading(true)
+    try {
+      const res = await fetch('/api/social', { signal })
+      const data = await res.json()
+      setSocialConfig(data)
+    } catch (error: unknown) {
+      if ((error as Error)?.name === 'AbortError') return
+      setSocialMessage({ type: 'error', text: 'No se pudo cargar la configuración de redes sociales' })
+    } finally {
+      setSocialLoading(false)
+    }
+  }
+
   useEffect(() => {
     const controller = new AbortController()
     fetchConfig(controller.signal)
+    fetchSocialConfig(controller.signal)
     return () => controller.abort()
   }, [])
 
@@ -181,6 +228,26 @@ export default function AdminSettingsPage() {
     setConfig((prev) => ({
       ...prev,
       [section]: !prev[section],
+    }))
+  }
+
+  const handleSocialToggle = (social: keyof SocialConfig) => {
+    setSocialConfig((prev) => ({
+      ...prev,
+      [social]: {
+        ...prev[social],
+        enabled: !prev[social].enabled,
+      },
+    }))
+  }
+
+  const handleSocialUrlChange = (social: keyof SocialConfig, url: string) => {
+    setSocialConfig((prev) => ({
+      ...prev,
+      [social]: {
+        ...prev[social],
+        url,
+      },
     }))
   }
 
@@ -202,19 +269,48 @@ export default function AdminSettingsPage() {
       } else {
         setMessage({ type: 'error', text: data.error || 'Error guardando' })
       }
-    } catch (error: any) {
-      if (error?.name === 'AbortError') return
+    } catch (error: unknown) {
+      if ((error as Error)?.name === 'AbortError') return
       setMessage({ type: 'error', text: 'Error de red, intenta de nuevo' })
     } finally {
       setSaving(false)
     }
   }
 
+  const handleSaveSocial = async () => {
+    setSavingSocial(true)
+    setSocialMessage(null)
+
+    try {
+      const res = await fetch('/api/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: socialConfig }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setSocialMessage({ type: 'success', text: 'Redes sociales guardadas' })
+      } else {
+        setSocialMessage({ type: 'error', text: data.error || 'Error guardando' })
+      }
+    } catch (error: unknown) {
+      if ((error as Error)?.name === 'AbortError') return
+      setSocialMessage({ type: 'error', text: 'Error de red, intenta de nuevo' })
+    } finally {
+      setSavingSocial(false)
+    }
+  }
+
   const configKeys = Object.keys(config) as Array<keyof SectionsConfig>
+  const socialKeys = Object.keys(socialConfig) as Array<keyof SocialConfig>
 
   return (
     <div style={styles.page}>
       <Link href="/admin" style={styles.backLink}>← Volver al panel</Link>
+
+      {/* Sections Config */}
       <div style={styles.card}>
         <h2 style={styles.title}>Configuración del sitio</h2>
         <p style={styles.subtitle}>Controla qué secciones son visibles en la web pública.</p>
@@ -252,6 +348,58 @@ export default function AdminSettingsPage() {
             {message && (
               <div style={message.type === 'success' ? styles.messageSuccess : styles.messageError}>
                 {message.text}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Social Media Config */}
+      <div style={styles.card}>
+        <h2 style={styles.title}>Redes Sociales</h2>
+        <p style={styles.subtitle}>Configura los enlaces de redes sociales que aparecen en el footer.</p>
+
+        {socialLoading ? (
+          <div style={styles.loading}>Cargando configuración...</div>
+        ) : (
+          <>
+            <div style={styles.toggleList}>
+              {socialKeys.map((social) => (
+                <div key={social} style={styles.socialRow}>
+                  <div style={styles.socialHeader}>
+                    <span style={styles.toggleTitle}>{socialLabels[social].title}</span>
+                    <button
+                      onClick={() => handleSocialToggle(social)}
+                      style={socialConfig[social].enabled ? styles.toggleActive : styles.toggle}
+                      aria-pressed={socialConfig[social].enabled}
+                    >
+                      <span style={socialConfig[social].enabled ? styles.thumbActive : styles.thumb} />
+                    </button>
+                  </div>
+                  {socialConfig[social].enabled && (
+                    <input
+                      type="url"
+                      placeholder={`URL de ${socialLabels[social].title}`}
+                      value={socialConfig[social].url}
+                      onChange={(e) => handleSocialUrlChange(social, e.target.value)}
+                      style={styles.input}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleSaveSocial}
+              disabled={savingSocial}
+              style={{ ...styles.button, ...(savingSocial ? styles.buttonDisabled : {}) }}
+            >
+              {savingSocial ? 'Guardando...' : 'Guardar redes sociales'}
+            </button>
+
+            {socialMessage && (
+              <div style={socialMessage.type === 'success' ? styles.messageSuccess : styles.messageError}>
+                {socialMessage.text}
               </div>
             )}
           </>

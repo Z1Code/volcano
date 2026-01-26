@@ -246,7 +246,7 @@ export default function RegisterForm() {
         const needsEmailConfirmation = !data.user.email_confirmed_at
 
         // Create profile in database
-        const { error: profileError } = await supabase
+        const { error: profileError } = await (supabase as any)
           .from('profiles')
           .upsert({
             id: data.user.id,

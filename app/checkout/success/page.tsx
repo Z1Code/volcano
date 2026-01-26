@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [loading, setLoading] = useState(true)
@@ -151,5 +151,25 @@ export default function CheckoutSuccessPage() {
         }
       `}</style>
     </div>
+  )
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%)',
+        color: '#fff',
+        fontSize: '1.25rem'
+      }}>
+        Loading...
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
   )
 }

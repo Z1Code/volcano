@@ -607,7 +607,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .service-card.card-right.card-tall {
     min-height: 280px;
-    margin-top: -40px;
+    margin-top: 24px;
 }
 
 .service-card.animate-in.card-left,
@@ -1429,7 +1429,7 @@ h1, h2, h3, h4, h5, h6 {
 
     .service-card.card-right.card-tall {
         min-height: 240px;
-        margin-top: -30px;
+        margin-top: 20px;
     }
 
     .service-icon-svg img {

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { SectionsConfig, defaultConfig } from '@/lib/sections-config'
+import { SocialConfig, defaultSocialConfig } from '@/lib/sections-config'
 
-const SETTINGS_KEY = 'sections_config'
+const SETTINGS_KEY = 'social_config'
 
-async function getConfig(): Promise<SectionsConfig> {
+async function getConfig(): Promise<SocialConfig> {
   try {
     const supabase = await createServiceClient()
     const { data, error } = await (supabase as any)
@@ -14,16 +14,16 @@ async function getConfig(): Promise<SectionsConfig> {
       .single()
 
     if (error || !data) {
-      return defaultConfig
+      return defaultSocialConfig
     }
 
-    return data.value as SectionsConfig
+    return data.value as SocialConfig
   } catch {
-    return defaultConfig
+    return defaultSocialConfig
   }
 }
 
-async function setConfig(config: SectionsConfig): Promise<boolean> {
+async function setConfig(config: SocialConfig): Promise<boolean> {
   try {
     const supabase = await createServiceClient()
     const { error } = await (supabase as any)
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { config } = body as { config: SectionsConfig }
+  const { config } = body as { config: SocialConfig }
 
   const success = await setConfig(config)
 

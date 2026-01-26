@@ -318,8 +318,8 @@ export default function AdminPage() {
         throw new Error(eventsRes.error.message)
       }
 
-      const tickets = ticketsRes.data || []
-      const events = eventsRes.data || []
+      const tickets = (ticketsRes.data || []) as Array<{ status: string; price_paid: number | null }>
+      const events = (eventsRes.data || []) as Array<{ id: string; is_active: boolean }>
 
       setStats({
         ticketsSold: tickets.length,

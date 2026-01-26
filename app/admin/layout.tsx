@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -97,7 +97,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user) {
     return (
       <div style={styles.loginContainer}>
-        <LoginForm redirectTo="/admin" embedded />
+        <Suspense fallback={<div style={{ color: '#fff' }}>Loading...</div>}>
+          <LoginForm redirectTo="/admin" embedded />
+        </Suspense>
       </div>
     )
   }

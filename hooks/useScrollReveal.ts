@@ -9,9 +9,9 @@ interface UseScrollRevealOptions {
 
 export function useScrollReveal<T extends HTMLElement>(
   options: UseScrollRevealOptions = {}
-): [React.RefObject<T>, boolean] {
+): [React.RefObject<T | null>, boolean] {
   const { threshold = 0.1, rootMargin = '0px' } = options
-  const elementRef = useRef<T>(null)
+  const elementRef = useRef<T | null>(null)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {

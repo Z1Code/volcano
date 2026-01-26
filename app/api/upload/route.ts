@@ -11,13 +11,13 @@ export async function POST(request: Request) {
   }
 
   // Check if user is admin
-  const { data: profile } = await supabase
+  const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') {
+  if ((profile as any)?.role !== 'admin') {
     return NextResponse.json({ error: 'Se requiere rol de admin' }, { status: 403 })
   }
 
@@ -84,13 +84,13 @@ export async function DELETE(request: Request) {
   }
 
   // Check if user is admin
-  const { data: profile } = await supabase
+  const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') {
+  if ((profile as any)?.role !== 'admin') {
     return NextResponse.json({ error: 'Se requiere rol de admin' }, { status: 403 })
   }
 
