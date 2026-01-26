@@ -218,6 +218,12 @@ export default function Events() {
 
   const renderEventCard = (event: EventWithTicketTypes, index: number) => {
     const isHovered = hoveredCard === event.id
+    const eventDate = new Date(event.date)
+
+    // Calculate if sold out
+    const totalSold = event.ticket_types?.reduce((sum, tt) => sum + (tt.quantity_sold || 0), 0) || 0
+    const totalAvailable = event.ticket_types?.reduce((sum, tt) => sum + (tt.quantity_available || 0), 0) || 0
+    const isSoldOut = totalAvailable > 0 && totalSold >= totalAvailable
 
     return (
       <Link
@@ -237,6 +243,36 @@ export default function Events() {
           ) : (
             <div style={styles.imagePlaceholder}>
               {defaultIcons[index % defaultIcons.length]}
+            </div>
+          )}
+
+          {/* Date Badge */}
+          <div style={styles.dateBadge}>
+            <span style={styles.dateDay}>{eventDate.getDate()}</span>
+            <span style={styles.dateMonth}>
+              {eventDate.toLocaleDateString('es-ES', { month: 'short' })}
+            </span>
+          </div>
+
+          {/* Sold Out Banner */}
+          {isSoldOut && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '-35px',
+                background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                color: '#fff',
+                padding: '6px 40px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                transform: 'rotate(45deg)',
+                boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+              }}
+            >
+              SOLD OUT
             </div>
           )}
         </div>
