@@ -1,376 +1,431 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { SectionsConfig, defaultConfig, sectionLabels } from '@/lib/sections-config'
+import { createClient } from '@/lib/supabase/client'
+
+const styles = {
+  page: {
+    maxWidth: '1200px',
+  } as React.CSSProperties,
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '12px',
+    marginBottom: '18px',
+  } as React.CSSProperties,
+  statCard: {
+    padding: '14px 16px',
+    borderRadius: '14px',
+    border: '1px solid #1f1f25',
+    background: 'linear-gradient(150deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02))',
+    color: '#f8fafc',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.35)',
+  } as React.CSSProperties,
+  statLabel: {
+    color: '#9ca3af',
+    fontSize: '0.85rem',
+  } as React.CSSProperties,
+  statValue: {
+    fontSize: '1.3rem',
+    fontWeight: 700,
+    letterSpacing: '0.02em',
+  } as React.CSSProperties,
+  hero: {
+    background: 'radial-gradient(circle at 20% 20%, rgba(255, 16, 131, 0.08), transparent 30%), radial-gradient(circle at 80% 10%, rgba(155, 48, 255, 0.1), transparent 25%), linear-gradient(135deg, #101014 0%, #0a0a0d 100%)',
+    border: '1px solid #18181b',
+    borderRadius: '20px',
+    padding: '28px 32px',
+    marginBottom: '24px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '24px',
+  } as React.CSSProperties,
+  heroText: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '8px',
+  } as React.CSSProperties,
+  title: {
+    fontFamily: "'Bebas Neue', sans-serif",
+    fontSize: '2.75rem',
+    color: '#fff',
+    letterSpacing: '0.08em',
+  } as React.CSSProperties,
+  subtitle: {
+    color: '#9ca3af',
+    fontSize: '1rem',
+    maxWidth: '620px',
+    lineHeight: 1.5,
+  } as React.CSSProperties,
+  heroBadge: {
+    alignSelf: 'flex-start',
+    padding: '10px 14px',
+    borderRadius: '12px',
+    background: 'rgba(255, 255, 255, 0.04)',
+    border: '1px solid #1f1f25',
+    color: '#cbd5e1',
+    fontSize: '0.875rem',
+  } as React.CSSProperties,
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '16px',
+    marginBottom: '24px',
+  } as React.CSSProperties,
+  tile: {
+    position: 'relative' as const,
+    padding: '18px',
+    borderRadius: '16px',
+    border: '1px solid #1f1f25',
+    background: 'linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(12, 12, 16, 0.85))',
+    color: '#e5e7eb',
+    textDecoration: 'none',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '8px',
+    transition: 'transform 0.12s ease, border 0.15s ease, box-shadow 0.15s ease',
+    boxShadow: '0 15px 30px rgba(0,0,0,0.35)',
+    fontFamily: "'SF Pro Display', 'Helvetica Neue', 'Neue Haas Grotesk', Arial, sans-serif",
+  } as React.CSSProperties,
+  tileAccent: {
+    position: 'absolute' as const,
+    inset: 0,
+    borderRadius: '16px',
+    background: 'linear-gradient(120deg, rgba(255, 16, 131, 0.12), rgba(155, 48, 255, 0.1))',
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+    pointerEvents: 'none' as const,
+  } as React.CSSProperties,
+  tileHover: {
+    transform: 'translateY(-2px)',
+    border: '1px solid rgba(255, 16, 131, 0.3)',
+    boxShadow: '0 18px 38px rgba(255,16,131,0.18)',
+  } as React.CSSProperties,
+  tilePressed: {
+    transform: 'translateY(2px) scale(0.99)',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.35)',
+  } as React.CSSProperties,
+  tileTitle: {
+    fontWeight: 700,
+    fontSize: '1.05rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    zIndex: 1,
+  } as React.CSSProperties,
+  tileEmoji: {
+    fontSize: '1.2rem',
+  } as React.CSSProperties,
+  tileDesc: {
+    color: '#9ca3af',
+    fontSize: '0.9rem',
+    lineHeight: 1.4,
+    zIndex: 1,
+  } as React.CSSProperties,
+  sections: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '16px',
+  } as React.CSSProperties,
+  card: {
+    background: 'rgba(12, 12, 16, 0.9)',
+    border: '1px solid #1f1f25',
+    borderRadius: '16px',
+    padding: '20px',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.35)',
+  } as React.CSSProperties,
+  cardTitle: {
+    fontSize: '1rem',
+    color: '#f8fafc',
+    marginBottom: '4px',
+  } as React.CSSProperties,
+  cardSubtitle: {
+    color: '#6b7280',
+    fontSize: '0.9rem',
+    marginBottom: '16px',
+  } as React.CSSProperties,
+  togglesWrap: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '8px',
+    marginBottom: '12px',
+  } as React.CSSProperties,
+  toggleRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr auto',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 14px',
+    borderRadius: '12px',
+    border: '1px solid #1f1f25',
+    background: 'rgba(255,255,255,0.02)',
+  } as React.CSSProperties,
+  toggleInfo: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+  } as React.CSSProperties,
+  toggleTitle: {
+    color: '#e5e7eb',
+    fontWeight: 600,
+  } as React.CSSProperties,
+  toggleDesc: {
+    color: '#9ca3af',
+    fontSize: '0.85rem',
+  } as React.CSSProperties,
+  toggle: {
+    position: 'relative' as const,
+    width: '58px',
+    height: '30px',
+    borderRadius: '20px',
+    border: '1px solid #2f2f34',
+    background: '#18181b',
+    cursor: 'pointer',
+  } as React.CSSProperties,
+  toggleActive: {
+    position: 'relative' as const,
+    width: '58px',
+    height: '30px',
+    borderRadius: '20px',
+    border: '1px solid rgba(255, 16, 131, 0.5)',
+    background: 'linear-gradient(120deg, rgba(255, 16, 131, 0.25), rgba(155, 48, 255, 0.35))',
+    cursor: 'pointer',
+  } as React.CSSProperties,
+  toggleThumb: {
+    position: 'absolute' as const,
+    top: '3px',
+    left: '3px',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    background: '#fff',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    transition: 'transform 0.2s ease',
+  } as React.CSSProperties,
+  toggleThumbActive: {
+    position: 'absolute' as const,
+    top: '3px',
+    left: '3px',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    background: '#0b0b0d',
+    transform: 'translateX(26px)',
+    boxShadow: '0 10px 25px rgba(255,16,131,0.35)',
+    transition: 'transform 0.2s ease',
+  } as React.CSSProperties,
+  messageSuccess: {
+    padding: '10px 12px',
+    borderRadius: '10px',
+    fontSize: '0.9rem',
+    background: 'rgba(16, 185, 129, 0.1)',
+    border: '1px solid rgba(16, 185, 129, 0.3)',
+    color: '#10b981',
+    marginTop: '8px',
+  } as React.CSSProperties,
+  messageError: {
+    padding: '10px 12px',
+    borderRadius: '10px',
+    fontSize: '0.9rem',
+    background: 'rgba(239, 68, 68, 0.1)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    color: '#ef4444',
+    marginTop: '8px',
+  } as React.CSSProperties,
+  formRow: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '12px',
+    flexWrap: 'wrap' as const,
+  } as React.CSSProperties,
+  input: {
+    flex: 1,
+    minWidth: '200px',
+    padding: '10px 12px',
+    borderRadius: '10px',
+    border: '1px solid #2a2a30',
+    background: '#0f1014',
+    color: '#e5e7eb',
+  } as React.CSSProperties,
+  button: {
+    padding: '12px 16px',
+    background: 'linear-gradient(135deg, #ff1083 0%, #9b30ff 100%)',
+    border: 'none',
+    borderRadius: '10px',
+    color: '#fff',
+    fontWeight: 700,
+    cursor: 'pointer',
+    minWidth: '160px',
+  } as React.CSSProperties,
+  buttonDisabled: {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  } as React.CSSProperties,
+  loading: {
+    color: '#fff',
+    fontSize: '1rem',
+    textAlign: 'center' as const,
+    padding: '20px 0',
+  } as React.CSSProperties,
+}
+
+const adminTiles = [
+  { href: '/admin/events', title: 'Eventos', desc: 'Crea, publica y controla aforos', emoji: '🎟️' },
+  { href: '/admin/tickets', title: 'Boletos', desc: 'Revisa ventas y controles', emoji: '📊' },
+  { href: '/admin/stats', title: 'Insights', desc: 'Métricas de desempeño', emoji: '📈' },
+  { href: '/admin/employees', title: 'Equipo', desc: 'Roles y accesos del staff', emoji: '🧑‍💼' },
+  { href: '/employee', title: 'Scanner', desc: 'Acceso rápido a lector', emoji: '📱' },
+  { href: '/admin/settings', title: 'Configuración', desc: 'Visibilidad del sitio', emoji: '⚙️' },
+]
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [config, setConfig] = useState<SectionsConfig>(defaultConfig)
-  const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [loggingIn, setLoggingIn] = useState(false)
-  const [loginError, setLoginError] = useState('')
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [hoveredTile, setHoveredTile] = useState<string | null>(null)
+  const [pressedTile, setPressedTile] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    ticketsSold: 0,
+    ticketsValidated: 0,
+    activeEvents: 0,
+    revenue: 0,
+  })
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
 
-  const fetchConfig = async () => {
-    setLoading(true)
+  const fetchStats = async () => {
+    setStatsLoading(true)
+    setStatsError(null)
     try {
-      const res = await fetch('/api/sections')
-      const data = await res.json()
-      setConfig(data)
-    } catch (error) {
-      console.error('Error fetching config:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+      const supabase = createClient()
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!password) return
+      // Fetch tickets and events directly from Supabase
+      const [ticketsRes, eventsRes] = await Promise.all([
+        supabase.from('tickets').select('status, price_paid'),
+        supabase.from('events').select('id, is_active')
+      ])
 
-    setLoggingIn(true)
-    setLoginError('')
+      console.log('Tickets response:', ticketsRes)
+      console.log('Events response:', eventsRes)
 
-    try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-
-      if (res.ok) {
-        setIsAuthenticated(true)
-        fetchConfig()
-      } else {
-        setLoginError('Invalid password')
+      if (ticketsRes.error) {
+        console.error('Tickets error:', ticketsRes.error.message, ticketsRes.error.code)
+        throw new Error(ticketsRes.error.message)
       }
-    } catch {
-      setLoginError('Network error. Please try again.')
-    } finally {
-      setLoggingIn(false)
-    }
-  }
-
-  const handleToggle = (section: keyof SectionsConfig) => {
-    setConfig((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }))
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    setMessage(null)
-
-    try {
-      const res = await fetch('/api/sections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, config }),
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Settings saved successfully!' })
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Error saving settings' })
+      if (eventsRes.error) {
+        console.error('Events error:', eventsRes.error.message, eventsRes.error.code)
+        throw new Error(eventsRes.error.message)
       }
-    } catch {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' })
+
+      const tickets = ticketsRes.data || []
+      const events = eventsRes.data || []
+
+      setStats({
+        ticketsSold: tickets.length,
+        ticketsValidated: tickets.filter(t => t.status === 'used').length,
+        activeEvents: events.filter(e => e.is_active).length,
+        revenue: tickets.reduce((sum, t) => sum + (t.price_paid || 0), 0),
+      })
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error desconocido'
+      console.error('Error fetching stats:', message)
+      setStatsError(message)
     } finally {
-      setSaving(false)
+      setStatsLoading(false)
     }
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="admin-container">
-        <div className="admin-card">
-          <h1 className="admin-title">VOLCANO ADMIN</h1>
-          <form onSubmit={handleLogin} className="admin-form">
-            <label className="admin-label">
-              Password
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="admin-input"
-                placeholder="Enter admin password"
-              />
-            </label>
-            <button type="submit" className="admin-btn">
-              Login
-            </button>
-          </form>
-        </div>
-
-        <style jsx>{`
-          .admin-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-            padding: 20px;
-          }
-          .admin-card {
-            background: rgba(20, 20, 20, 0.95);
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-          }
-          .admin-title {
-            font-family: var(--font-display), 'Bebas Neue', sans-serif;
-            font-size: 2rem;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 32px;
-            letter-spacing: 0.1em;
-          }
-          .admin-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-          }
-          .admin-label {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            color: #888;
-            font-size: 0.875rem;
-          }
-          .admin-input {
-            padding: 12px 16px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-          }
-          .admin-input:focus {
-            outline: none;
-            border-color: #ff1083;
-          }
-          .admin-btn {
-            padding: 14px 24px;
-            background: linear-gradient(135deg, #ff1083 0%, #9b30ff 100%);
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-          }
-          .admin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(255, 16, 131, 0.4);
-          }
-        `}</style>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="admin-container">
-        <div className="admin-loading">Loading...</div>
-        <style jsx>{`
-          .admin-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-          }
-          .admin-loading {
-            color: #fff;
-            font-size: 1.25rem;
-          }
-        `}</style>
-      </div>
-    )
-  }
+  useEffect(() => {
+    fetchStats()
+  }, [])
 
   return (
-    <div className="admin-container">
-      <div className="admin-card">
-        <h1 className="admin-title">VOLCANO ADMIN</h1>
-
-        <div className="admin-sections">
-          <h2 className="admin-subtitle">Section Visibility</h2>
-
-          {(Object.keys(config) as Array<keyof SectionsConfig>).map((section) => (
-            <div key={section} className="admin-toggle-row">
-              <div className="admin-toggle-info">
-                <span className="admin-toggle-title">{sectionLabels[section].title}</span>
-                <span className="admin-toggle-desc">{sectionLabels[section].description}</span>
-              </div>
-              <button
-                onClick={() => handleToggle(section)}
-                className={`admin-toggle ${config[section] ? 'active' : ''}`}
-              >
-                <span className="admin-toggle-slider" />
-              </button>
-            </div>
-          ))}
+    <div style={styles.page}>
+      <div style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <span style={styles.statLabel}>Tickets vendidos</span>
+          <span style={styles.statValue}>
+            {statsLoading ? '...' : stats.ticketsSold}
+          </span>
         </div>
+        <div style={styles.statCard}>
+          <span style={styles.statLabel}>Tickets validados</span>
+          <span style={styles.statValue}>
+            {statsLoading ? '...' : stats.ticketsValidated}
+          </span>
+        </div>
+        <div style={styles.statCard}>
+          <span style={styles.statLabel}>Eventos activos</span>
+          <span style={styles.statValue}>
+            {statsLoading ? '...' : stats.activeEvents}
+          </span>
+        </div>
+        <div style={styles.statCard}>
+          <span style={styles.statLabel}>Ingresos totales</span>
+          <span style={styles.statValue}>
+            {statsLoading ? '...' : `$${stats.revenue.toFixed(2)}`}
+          </span>
+        </div>
+      </div>
+      {statsError && (
+        <div style={{ color: '#f97316', marginBottom: '12px', fontSize: '0.95rem' }}>
+          {statsError}
+        </div>
+      )}
 
-        {message && (
-          <div className={`admin-message ${message.type}`}>
-            {message.text}
-          </div>
-        )}
+      <section style={styles.hero}>
+        <div style={styles.heroText}>
+          <span style={styles.heroBadge}>Centro de control</span>
+          <h1 style={styles.title}>Panel de administración</h1>
+          <p style={styles.subtitle}>
+            Gestiona eventos, equipo, boletos y la visibilidad del sitio desde un hub más limpio y moderno.
+          </p>
+        </div>
+      </section>
 
-        <button onClick={handleSave} disabled={saving} className="admin-btn save">
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
-
-        <a href="/" className="admin-link">
-          View Website
-        </a>
+      <div style={styles.grid}>
+        {adminTiles.map((tile) => (
+          <Link
+            key={tile.href}
+            href={tile.href}
+            style={{
+              ...styles.tile,
+              ...(hoveredTile === tile.href ? styles.tileHover : {}),
+              ...(pressedTile === tile.href ? styles.tilePressed : {}),
+            }}
+            onMouseEnter={() => setHoveredTile(tile.href)}
+            onMouseLeave={() => setHoveredTile(null)}
+            onMouseDown={() => setPressedTile(tile.href)}
+            onMouseUp={() => setPressedTile(null)}
+            onBlur={() => setPressedTile(null)}
+          >
+            <span
+              style={{
+                ...styles.tileAccent,
+                opacity: hoveredTile === tile.href ? 1 : 0,
+              }}
+            />
+            <div style={styles.tileTitle}>
+              <span style={styles.tileEmoji}>{tile.emoji}</span>
+              {tile.title}
+            </div>
+            <p style={styles.tileDesc}>{tile.desc}</p>
+          </Link>
+        ))}
       </div>
 
-      <style jsx>{`
-        .admin-container {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-          padding: 20px;
-        }
-        .admin-card {
-          background: rgba(20, 20, 20, 0.95);
-          border: 1px solid #333;
-          border-radius: 12px;
-          padding: 40px;
-          width: 100%;
-          max-width: 500px;
-        }
-        .admin-title {
-          font-family: var(--font-display), 'Bebas Neue', sans-serif;
-          font-size: 2rem;
-          color: #fff;
-          text-align: center;
-          margin-bottom: 32px;
-          letter-spacing: 0.1em;
-        }
-        .admin-subtitle {
-          font-size: 0.875rem;
-          color: #888;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          margin-bottom: 20px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid #333;
-        }
-        .admin-sections {
-          margin-bottom: 24px;
-        }
-        .admin-toggle-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 16px 0;
-          border-bottom: 1px solid #222;
-        }
-        .admin-toggle-row:last-child {
-          border-bottom: none;
-        }
-        .admin-toggle-info {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .admin-toggle-title {
-          color: #fff;
-          font-weight: 500;
-        }
-        .admin-toggle-desc {
-          color: #666;
-          font-size: 0.875rem;
-        }
-        .admin-toggle {
-          width: 52px;
-          height: 28px;
-          background: #333;
-          border: none;
-          border-radius: 14px;
-          position: relative;
-          cursor: pointer;
-          transition: background 0.3s;
-        }
-        .admin-toggle.active {
-          background: linear-gradient(135deg, #ff1083 0%, #9b30ff 100%);
-        }
-        .admin-toggle-slider {
-          position: absolute;
-          top: 3px;
-          left: 3px;
-          width: 22px;
-          height: 22px;
-          background: #fff;
-          border-radius: 50%;
-          transition: transform 0.3s;
-        }
-        .admin-toggle.active .admin-toggle-slider {
-          transform: translateX(24px);
-        }
-        .admin-message {
-          padding: 12px 16px;
-          border-radius: 8px;
-          margin-bottom: 16px;
-          font-size: 0.875rem;
-        }
-        .admin-message.success {
-          background: rgba(16, 185, 129, 0.1);
-          border: 1px solid rgba(16, 185, 129, 0.3);
-          color: #10b981;
-        }
-        .admin-message.error {
-          background: rgba(239, 68, 68, 0.1);
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          color: #ef4444;
-        }
-        .admin-btn {
-          width: 100%;
-          padding: 14px 24px;
-          background: linear-gradient(135deg, #ff1083 0%, #9b30ff 100%);
-          border: none;
-          border-radius: 8px;
-          color: #fff;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-        }
-        .admin-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 20px rgba(255, 16, 131, 0.4);
-        }
-        .admin-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-        .admin-link {
-          display: block;
-          text-align: center;
-          margin-top: 20px;
-          color: #888;
-          text-decoration: none;
-          font-size: 0.875rem;
-          transition: color 0.2s;
-        }
-        .admin-link:hover {
-          color: #ff1083;
-        }
-      `}</style>
+      <div style={styles.sections}>
+        <section style={styles.card}>
+          <h2 style={styles.cardTitle}>Notas rápidas</h2>
+          <p style={styles.cardSubtitle}>Revisa eventos y tareas clave.</p>
+          <ul style={{ color: '#9ca3af', lineHeight: 1.6, paddingLeft: '16px', margin: 0 }}>
+            <li>Publica nuevos eventos y revisa su aforo en “Eventos”.</li>
+            <li>Controla accesos del staff en “Equipo”.</li>
+            <li>Usa “Scanner” para validar tickets en sitio.</li>
+          </ul>
+        </section>
+      </div>
     </div>
   )
 }

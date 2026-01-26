@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 120" width="450" height="120">
+  <defs>
+    <filter id="pinkGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur1"/>
+      <feGaussianBlur stdDeviation="3" result="blur2"/>
+      <feFlood flood-color="#FF00FF" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur2" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="blueGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur1"/>
+      <feGaussianBlur stdDeviation="3" result="blur2"/>
+      <feFlood flood-color="#4169E1" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur2" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="fireGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#FF6600" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <linearGradient id="lavaGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#CC3300"/>
+      <stop offset="40%" stop-color="#FF4500"/>
+      <stop offset="70%" stop-color="#FF8800"/>
+      <stop offset="100%" stop-color="#FFDD00"/>
+    </linearGradient>
+
+    <linearGradient id="volcanoBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8B4513"/>
+      <stop offset="100%" stop-color="#3D2314"/>
+    </linearGradient>
+
+    <radialGradient id="smokeGrad" cx="50%" cy="100%" r="80%">
+      <stop offset="0%" stop-color="#555" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#222" stop-opacity="0.3"/>
+    </radialGradient>
+
+    <radialGradient id="brightCenter" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="40%" stop-color="#FFFF00"/>
+      <stop offset="100%" stop-color="#FF8800"/>
+    </radialGradient>
+  </defs>
+
+  <!-- V with Volcano Icon -->
+  <g transform="translate(55, 60)">
+    <!-- V Shape -->
+    <path d="M-3 -50 L-38 45 L-30 45 L-3 -35" fill="none" stroke="#6B8DD6" stroke-width="2.5" filter="url(#blueGlow)"/>
+    <path d="M3 -50 L38 45 L30 45 L3 -35" fill="none" stroke="#6B8DD6" stroke-width="2.5" filter="url(#blueGlow)"/>
+
+    <!-- Volcano -->
+    <path d="M-25 42 L-10 5 L0 18 L10 5 L25 42 Z" fill="url(#volcanoBody)"/>
+    <ellipse cx="0" cy="8" rx="12" ry="4" fill="#2D1810"/>
+
+    <!-- Lava -->
+    <path d="M-8 8 C-12 -10 -8 -25 0 -40 C8 -25 12 -10 8 8 C4 7 -4 7 -8 8" fill="url(#lavaGrad)" filter="url(#fireGlow)"/>
+    <ellipse cx="0" cy="-20" rx="5" ry="8" fill="url(#brightCenter)" filter="url(#fireGlow)"/>
+
+    <!-- Splashes -->
+    <g filter="url(#fireGlow)">
+      <circle cx="-12" cy="-35" r="3" fill="#FF6600"/>
+      <circle cx="10" cy="-38" r="2.5" fill="#FFAA00"/>
+      <circle cx="0" cy="-45" r="2" fill="#FFCC00"/>
+      <circle cx="-8" cy="-42" r="2" fill="#FF8800"/>
+    </g>
+
+    <!-- Smoke -->
+    <g opacity="0.8">
+      <ellipse cx="-8" cy="-40" rx="10" ry="8" fill="url(#smokeGrad)"/>
+      <ellipse cx="6" cy="-44" rx="12" ry="9" fill="url(#smokeGrad)"/>
+      <ellipse cx="0" cy="-48" rx="14" ry="8" fill="url(#smokeGrad)"/>
+    </g>
+  </g>
+
+  <!-- VOLCANO Text -->
+  <g filter="url(#pinkGlow)">
+    <text x="130" y="55" font-family="Impact, Arial Black, sans-serif"
+          font-size="42" font-weight="bold"
+          fill="none" stroke="#FF1493" stroke-width="2"
+          letter-spacing="3">VOLCANO</text>
+  </g>
+
+  <!-- NIGHT CLUB Text -->
+  <g filter="url(#blueGlow)">
+    <text x="132" y="85" font-family="Arial, sans-serif"
+          font-size="18" font-weight="bold"
+          fill="none" stroke="#7B8FD4" stroke-width="1.5"
+          letter-spacing="6">NIGHT CLUB</text>
+  </g>
+</svg>

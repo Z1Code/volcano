@@ -73,11 +73,12 @@ export default function Navbar() {
       <div className="nav-container">
         <Link href="/" className="logo">
           <Image
-            src="/logo.svg"
-            alt="Volcano"
-            width={195}
-            height={38}
+            src="/logo.png"
+            alt="Volcano Night Club"
+            width={200}
+            height={100}
             priority
+            style={{ objectFit: 'contain', height: '100px', width: 'auto' }}
           />
         </Link>
 

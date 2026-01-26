@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <defs>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <linearGradient id="pinkNeon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E91E9D"/>
+      <stop offset="50%" stop-color="#FF2BB8"/>
+      <stop offset="100%" stop-color="#E91E9D"/>
+    </linearGradient>
+
+    <linearGradient id="blueNeon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B6EE1"/>
+      <stop offset="100%" stop-color="#8B9FFF"/>
+    </linearGradient>
+
+    <linearGradient id="fireGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FF4500"/>
+      <stop offset="60%" stop-color="#FF8C00"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </linearGradient>
+  </defs>
+
+  <!-- V with volcano -->
+  <g transform="translate(150, 75)">
+    <!-- V outline -->
+    <path d="M0 -55 L50 55 L0 55 Z" fill="none" stroke="url(#blueNeon)" stroke-width="2.5" filter="url(#glow)"/>
+    <path d="M0 -55 L-50 55 L0 55 Z" fill="none" stroke="url(#blueNeon)" stroke-width="2.5" filter="url(#glow)"/>
+
+    <!-- Volcano -->
+    <path d="M-30 50 L-10 -5 L0 10 L10 -5 L30 50 Z" fill="#6B3A1F"/>
+
+    <!-- Lava -->
+    <path d="M-8 -5 Q-10 -30 0 -45 Q10 -30 8 -5" fill="url(#fireGrad)" filter="url(#glow)"/>
+    <circle cx="0" cy="-25" r="6" fill="#FFD700" filter="url(#glow)"/>
+
+    <!-- Sparks -->
+    <circle cx="-12" cy="-35" r="2.5" fill="#FF6B00" filter="url(#glow)"/>
+    <circle cx="14" cy="-40" r="2" fill="#FFD700" filter="url(#glow)"/>
+    <circle cx="5" cy="-48" r="3" fill="#FF4500" filter="url(#glow)"/>
+  </g>
+
+  <!-- Text -->
+  <text x="150" y="160" text-anchor="middle" font-family="Arial Black, sans-serif"
+        font-size="36" font-weight="900" fill="none" stroke="url(#pinkNeon)"
+        stroke-width="2" letter-spacing="3" filter="url(#glow)">VOLCANO</text>
+
+  <text x="150" y="185" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="16" font-weight="600" fill="none" stroke="url(#blueNeon)"
+        stroke-width="1.2" letter-spacing="6" filter="url(#glow)">NIGHT CLUB</text>
+</svg>
