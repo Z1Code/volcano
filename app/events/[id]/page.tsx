@@ -120,6 +120,18 @@ export default function EventDetailPage() {
   const eventDate = new Date(event.date)
   const isPast = eventDate < new Date()
 
+  // Sort ticket types: Early first, General second, VIP last
+  const sortedTicketTypes = [...(event.ticket_types || [])].sort((a, b) => {
+    const getOrder = (name: string) => {
+      const lower = name.toLowerCase()
+      if (lower.includes('early')) return 0
+      if (lower.includes('general')) return 1
+      if (lower.includes('vip')) return 2
+      return 1 // Default to middle if no match
+    }
+    return getOrder(a.name) - getOrder(b.name)
+  })
+
   return (
     <div className="event-detail-page">
       <div className="event-hero">
@@ -178,7 +190,7 @@ export default function EventDetailPage() {
             </div>
           ) : (
             <TicketSelector
-              ticketTypes={event.ticket_types}
+              ticketTypes={sortedTicketTypes}
               onSelect={handlePurchase}
               loading={purchasing}
             />

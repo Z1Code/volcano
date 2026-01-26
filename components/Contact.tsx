@@ -34,7 +34,7 @@ export default function Contact() {
             >
               Buy Tickets
             </a>
-            <a href="mailto:info@volcanoclub.com" className="btn btn-outline">
+            <a href="https://wa.me/17868300315" target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               Contact Us
             </a>
           </div>
@@ -59,7 +59,7 @@ export default function Contact() {
             <div className="contact-info-item">
               <div className="contact-info-icon">📞</div>
               <div className="contact-info-text">
-                <a href="tel:+18015550123">+1 (801) 555 - 0123</a>
+                <a href="https://wa.me/17868300315" target="_blank" rel="noopener noreferrer">+1 (786) 830 - 0315</a>
               </div>
             </div>
           </div>
