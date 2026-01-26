@@ -59,7 +59,7 @@ const styles = {
   } as React.CSSProperties,
   imageWrap: {
     position: 'relative' as const,
-    height: '320px',
+    height: '100%',
     overflow: 'hidden',
     background: 'linear-gradient(135deg, #1a1a20 0%, #0d0d10 100%)',
   } as React.CSSProperties,
@@ -216,16 +216,7 @@ export default function Events() {
     fetchEvents()
   }, [])
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    })
-  }
-
   const renderEventCard = (event: EventWithTicketTypes, index: number) => {
-    const eventDate = new Date(event.date)
     const isHovered = hoveredCard === event.id
 
     return (
@@ -248,22 +239,6 @@ export default function Events() {
               {defaultIcons[index % defaultIcons.length]}
             </div>
           )}
-          <div style={styles.dateBadge}>
-            <span style={styles.dateDay}>{eventDate.getDate()}</span>
-            <span style={styles.dateMonth}>
-              {eventDate.toLocaleDateString('en-US', { month: 'short' })}
-            </span>
-          </div>
-        </div>
-        <div style={styles.content}>
-          <h3 style={styles.eventTitle}>{event.title}</h3>
-          <div style={styles.eventTime}>
-            <span>🕐</span>
-            <span>{formatTime(eventDate)}</span>
-          </div>
-          <span style={styles.eventLink}>
-            Get tickets <span>→</span>
-          </span>
         </div>
       </Link>
     )
