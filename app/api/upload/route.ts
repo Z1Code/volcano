@@ -73,3 +73,58 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Error procesando imagen' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  const supabase = await createClient()
+
+  // Verify user is authenticated
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  // Check if user is admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Se requiere rol de admin' }, { status: 403 })
+  }
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const url = searchParams.get('url')
+
+    if (!url) {
+      return NextResponse.json({ error: 'URL de imagen requerida' }, { status: 400 })
+    }
+
+    // Extract path from URL (e.g., "events/1234567890-abc123.jpg")
+    const urlObj = new URL(url)
+    const pathMatch = urlObj.pathname.match(/\/storage\/v1\/object\/public\/images\/(.+)/)
+
+    if (!pathMatch) {
+      return NextResponse.json({ error: 'URL de imagen inválida' }, { status: 400 })
+    }
+
+    const filePath = pathMatch[1]
+
+    // Delete from Supabase Storage
+    const { error } = await supabase.storage
+      .from('images')
+      .remove([filePath])
+
+    if (error) {
+      console.error('Delete error:', error)
+      return NextResponse.json({ error: 'Error eliminando imagen: ' + error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Delete error:', error)
+    return NextResponse.json({ error: 'Error procesando eliminación' }, { status: 500 })
+  }
+}

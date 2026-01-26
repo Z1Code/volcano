@@ -77,3 +77,89 @@ export async function POST(request: Request) {
 
   return NextResponse.json(event, { status: 201 })
 }
+
+export async function PUT(request: Request) {
+  const supabase = await createServiceClient()
+
+  // Check if user is admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { data: profile } = await (supabase as any)
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if ((profile as any)?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const body = await request.json()
+  const { id, title, description, date, image_url, is_active } = body
+
+  if (!id) {
+    return NextResponse.json({ error: 'Event ID required' }, { status: 400 })
+  }
+
+  // Update event
+  const { data: event, error: eventError } = await (supabase as any)
+    .from('events')
+    .update({
+      title,
+      description,
+      date,
+      image_url,
+      is_active,
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (eventError) {
+    return NextResponse.json({ error: eventError.message }, { status: 500 })
+  }
+
+  return NextResponse.json(event)
+}
+
+export async function DELETE(request: Request) {
+  const supabase = await createServiceClient()
+
+  // Check if user is admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { data: profile } = await (supabase as any)
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if ((profile as any)?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get('id')
+
+  if (!id) {
+    return NextResponse.json({ error: 'Event ID required' }, { status: 400 })
+  }
+
+  // Delete event (cascade will delete ticket_types)
+  const { error } = await (supabase as any)
+    .from('events')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
+}

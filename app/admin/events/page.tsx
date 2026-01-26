@@ -329,6 +329,19 @@ export default function AdminEventsPage() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
 
+  // Edit state
+  const [editingEvent, setEditingEvent] = useState<EventWithTicketTypes | null>(null)
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    image_url: '',
+    is_active: true,
+  })
+  const [editUploading, setEditUploading] = useState(false)
+  const [editSaving, setEditSaving] = useState(false)
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -354,6 +367,126 @@ export default function AdminEventsPage() {
       alert('Error subiendo imagen')
     } finally {
       setUploading(false)
+    }
+  }
+
+  // Edit functions
+  const startEditing = (event: EventWithTicketTypes) => {
+    const eventDate = new Date(event.date)
+    setEditingEvent(event)
+    setEditForm({
+      title: event.title,
+      description: event.description || '',
+      date: eventDate.toISOString().split('T')[0],
+      time: eventDate.toTimeString().slice(0, 5),
+      image_url: event.image_url || '',
+      is_active: event.is_active,
+    })
+  }
+
+  const cancelEditing = () => {
+    setEditingEvent(null)
+    setEditForm({
+      title: '',
+      description: '',
+      date: '',
+      time: '',
+      image_url: '',
+      is_active: true,
+    })
+  }
+
+  const handleEditImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setEditUploading(true)
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append('file', file)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      })
+
+      const data = await res.json()
+      if (res.ok && data.url) {
+        setEditForm((prev) => ({ ...prev, image_url: data.url }))
+      } else {
+        alert(data.error || 'Error subiendo imagen')
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Error subiendo imagen')
+    } finally {
+      setEditUploading(false)
+    }
+  }
+
+  const deleteEditImage = async () => {
+    if (!editForm.image_url) return
+
+    // Only delete from Supabase if it's a Supabase URL
+    if (editForm.image_url.includes('supabase')) {
+      try {
+        const res = await fetch(`/api/upload?url=${encodeURIComponent(editForm.image_url)}`, {
+          method: 'DELETE',
+        })
+        if (!res.ok) {
+          console.error('Error deleting image from storage')
+        }
+      } catch (error) {
+        console.error('Error deleting image:', error)
+      }
+    }
+
+    setEditForm((prev) => ({ ...prev, image_url: '' }))
+  }
+
+  const saveEdit = async () => {
+    if (!editingEvent) return
+
+    setEditSaving(true)
+    try {
+      const eventDate = new Date(`${editForm.date}T${editForm.time}`)
+
+      // If image changed and old image was from Supabase, delete old image
+      if (editingEvent.image_url && editingEvent.image_url !== editForm.image_url && editingEvent.image_url.includes('supabase')) {
+        try {
+          await fetch(`/api/upload?url=${encodeURIComponent(editingEvent.image_url)}`, {
+            method: 'DELETE',
+          })
+        } catch (error) {
+          console.error('Error deleting old image:', error)
+        }
+      }
+
+      const res = await fetch('/api/events', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingEvent.id,
+          title: editForm.title,
+          description: editForm.description,
+          date: eventDate.toISOString(),
+          image_url: editForm.image_url || null,
+          is_active: editForm.is_active,
+        }),
+      })
+
+      if (res.ok) {
+        cancelEditing()
+        fetchEvents()
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Error actualizando evento')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error actualizando evento')
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -722,15 +855,31 @@ export default function AdminEventsPage() {
                       </span>
                     </div>
                   </div>
-                  <div style={styles.stats}>
-                    <div style={styles.statItem}>
-                      <span style={styles.statValue}>{totalSold}</span>
-                      <span style={styles.statLabel}>Vendidos</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={styles.stats}>
+                      <div style={styles.statItem}>
+                        <span style={styles.statValue}>{totalSold}</span>
+                        <span style={styles.statLabel}>Vendidos</span>
+                      </div>
+                      <div style={styles.statItem}>
+                        <span style={styles.statValue}>{totalAvailable - totalSold}</span>
+                        <span style={styles.statLabel}>Disponibles</span>
+                      </div>
                     </div>
-                    <div style={styles.statItem}>
-                      <span style={styles.statValue}>{totalAvailable - totalSold}</span>
-                      <span style={styles.statLabel}>Disponibles</span>
-                    </div>
+                    <button
+                      onClick={() => startEditing(event)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid #262630',
+                        background: 'rgba(255,255,255,0.04)',
+                        color: '#e5e7eb',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      Editar
+                    </button>
                   </div>
                 </div>
               )
@@ -738,6 +887,199 @@ export default function AdminEventsPage() {
           </div>
         </section>
       </div>
+
+      {/* Edit Modal */}
+      {editingEvent && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={(e) => e.target === e.currentTarget && cancelEditing()}
+        >
+          <div
+            style={{
+              background: '#0c0c0e',
+              borderRadius: '16px',
+              border: '1px solid #1f1f25',
+              padding: '24px',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 700 }}>Editar evento</h2>
+              <button
+                onClick={cancelEditing}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#9ca3af',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Image Section */}
+            <div style={styles.imagePreviewWrap}>
+              {editForm.image_url ? (
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={editForm.image_url}
+                    alt="Preview"
+                    style={styles.imagePreview}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={deleteEditImage}
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: 'rgba(239, 68, 68, 0.9)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Eliminar imagen
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    id="edit-image-upload"
+                    accept="image/*"
+                    onChange={handleEditImageUpload}
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="edit-image-upload" style={{ cursor: editUploading ? 'wait' : 'pointer', display: 'block' }}>
+                    <div style={styles.imagePlaceholder}>
+                      {editUploading ? '⏳ Subiendo...' : '📷 Haz clic para subir imagen'}
+                    </div>
+                  </label>
+                </>
+              )}
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Título *</label>
+              <input
+                type="text"
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                required
+                style={styles.input}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '12px 0' }}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Fecha *</label>
+                <input
+                  type="date"
+                  value={editForm.date}
+                  onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                  required
+                  style={styles.input}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Hora *</label>
+                <input
+                  type="time"
+                  value={editForm.time}
+                  onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
+                  required
+                  style={styles.input}
+                />
+              </div>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Descripción</label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                style={styles.textarea}
+                rows={3}
+              />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
+              <label style={{ color: '#a1a1aa', fontSize: '0.9rem' }}>Estado:</label>
+              <button
+                type="button"
+                onClick={() => setEditForm({ ...editForm, is_active: !editForm.is_active })}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid',
+                  borderColor: editForm.is_active ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+                  background: editForm.is_active ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                  color: editForm.is_active ? '#10b981' : '#ef4444',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                }}
+              >
+                {editForm.is_active ? 'Activo' : 'Pausado'}
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button
+                onClick={cancelEditing}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '1px solid #262630',
+                  background: 'transparent',
+                  color: '#9ca3af',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveEdit}
+                disabled={editSaving}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #ff1083 0%, #9b30ff 100%)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  cursor: editSaving ? 'not-allowed' : 'pointer',
+                  opacity: editSaving ? 0.6 : 1,
+                }}
+              >
+                {editSaving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
